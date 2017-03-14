@@ -15,35 +15,32 @@ app.use(bodyParser.urlencoded({extended: true}))
 
 var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080,
     ip   = process.env.IP   || process.env.OPENSHIFT_NODEJS_IP || 'localhost',
-    mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL || process.env.MONGO_URL,
-    mongoURLLabel = "";
-if (mongoURL == null && process.env.DATABASE_SERVICE_NAME) {
-  // if (mongoURL == null) {
-  var mongoServiceName = process.env.DATABASE_SERVICE_NAME.toUpperCase(),
-      mongoHost = process.env[mongoServiceName + '_SERVICE_HOST'],
-      mongoPort = process.env[mongoServiceName + '_SERVICE_PORT'],
-      mongoDatabase = process.env[mongoServiceName + '_DATABASE'],
-      mongoPassword = process.env[mongoServiceName + '_PASSWORD']
-      mongoUser = process.env[mongoServiceName + '_USER'];
-      // var mongoHost =  '127.0.0.1',
-      //     mongoPort =  27017,
-      //     mongoDatabase = 'user',
-      //     mongoUser, mongoPassword;
+    mongoHost =  '127.0.0.1',
+    mongoPort =  27017,
+    mongoDatabase = 'user',
+    mongoUser, mongoPassword,
+    mongoURL = 'mongodb://' + mongoHost + ':' + mongoPort + '/' + mongoDatabase;
 
+    if (process.env.DATABASE_SERVICE_NAME) {
+        mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL || process.env.MONGO_URL;
+    if (mongoURL == null && process.env.DATABASE_SERVICE_NAME) {
+      var mongoServiceName = process.env.DATABASE_SERVICE_NAME.toUpperCase();
+          mongoHost = process.env[mongoServiceName + '_SERVICE_HOST']
+          mongoPort = process.env[mongoServiceName + '_SERVICE_PORT']
+          mongoDatabase = process.env[mongoServiceName + '_DATABASE']
+          mongoPassword = process.env[mongoServiceName + '_PASSWORD']
+          mongoUser = process.env[mongoServiceName + '_USER'];
 
-  if (mongoHost && mongoPort && mongoDatabase) {
-    mongoURLLabel = mongoURL = 'mongodb://';
-    if (mongoUser && mongoPassword) {
-      mongoURL += mongoUser + ':' + mongoPassword + '@';
+      if (mongoHost && mongoPort && mongoDatabase) {
+          mongoURL = 'mongodb://';
+        if (mongoUser && mongoPassword) {
+          mongoURL += mongoUser + ':' + mongoPassword + '@';
+        }
+          mongoURL += mongoHost + ':' +  mongoPort + '/' + mongoDatabase;
+      }
     }
-    // Provide UI label that excludes user id and pw
-    mongoURLLabel += mongoHost + ':' + mongoPort + '/' + mongoDatabase;
-    mongoURL += mongoHost + ':' +  mongoPort + '/' + mongoDatabase;
-  }
 }
-
-var db = null,
-    dbDetails = new Object();
+var db = null;
 
 
 var initDb = function(callback) {
@@ -56,19 +53,19 @@ var initDb = function(callback) {
       console.log(err);
       return;
     }
-
     db = conn;
-    dbDetails.databaseName = db.databaseName;
-    dbDetails.url = mongoURLLabel;
-    dbDetails.type = 'MongoDB';
-
     console.log('Connected to MongoDB at: %s', mongoURL);
   });
 };
 
 app.get('/', function (req, res) {
-  //res.send('used for api only')
-  res.sendFile("./index.html", {root:__dirname})
+  res.send('used for api only')
+  // res.sendFile("./index.html", {root:__dirname})
+});
+
+app.get('/env', function (req, res) {
+  console.log(process.env)
+  res.json(JSON.stringify(process.env))
 });
 
 app.get('/guestlist', function (req, res) {
@@ -118,6 +115,9 @@ app.post('/sendguest', function (req, res) {
   }
 });
 
+app.all('*', function(req, res) {
+  res.send('Unauthorized attemp')
+})
 // error handling
 app.use(function(err, req, res, next){
   console.error(err.stack);
