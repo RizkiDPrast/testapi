@@ -13,8 +13,8 @@ app.use(bodyParser.urlencoded({extended: true}))
 
 // app.use(express.static('public'))
 
-var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080,
-    ip   = process.env.IP   || process.env.OPENSHIFT_NODEJS_IP || 'localhost',
+var port = process.env.RIZKIAPI_SERVICE_PORT || process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080,
+    ip   = process.env.RIZKIAPI_SERVICE_HOST || process.env.IP   || process.env.OPENSHIFT_NODEJS_IP || 'localhost',
     mongoHost =  '127.0.0.1',
     mongoPort =  27017,
     mongoDatabase = 'user',
@@ -22,8 +22,6 @@ var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080,
     mongoURL = 'mongodb://' + mongoHost + ':' + mongoPort + '/' + mongoDatabase;
 
     if (process.env.DATABASE_SERVICE_NAME) {
-        mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL || process.env.MONGO_URL;
-    if (mongoURL == null && process.env.DATABASE_SERVICE_NAME) {
       var mongoServiceName = process.env.DATABASE_SERVICE_NAME.toUpperCase();
           mongoHost = process.env[mongoServiceName + '_SERVICE_HOST']
           mongoPort = process.env[mongoServiceName + '_SERVICE_PORT']
@@ -39,7 +37,6 @@ var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080,
           mongoURL += mongoHost + ':' +  mongoPort + '/' + mongoDatabase;
       }
     }
-}
 var db = null;
 
 
@@ -59,7 +56,7 @@ var initDb = function(callback) {
 };
 
 app.get('/', function (req, res) {
-  res.send('used for api only')
+  res.status('200').send('used for api only')
   // res.sendFile("./index.html", {root:__dirname})
 });
 
