@@ -20,8 +20,9 @@ var port = process.env.RIZKIAPI_SERVICE_PORT || process.env.PORT || process.env.
     mongoDatabase = 'user',
     mongoUser, mongoPassword,
     mongoURL = 'mongodb://' + mongoHost + ':' + mongoPort + '/' + mongoDatabase;
-
-    if (process.env.DATABASE_SERVICE_NAME) {
+    if(process.env.OPENSHIFT_MONGODB_DB_URL){
+       mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL + db_name;
+      } else if (process.env.DATABASE_SERVICE_NAME) {
       var mongoServiceName = process.env.DATABASE_SERVICE_NAME.toUpperCase();
           mongoHost = process.env[mongoServiceName + '_SERVICE_HOST']
           mongoPort = process.env[mongoServiceName + '_SERVICE_PORT']
@@ -127,3 +128,4 @@ app.use(function(err, req, res, next){
 
 app.listen(port, ip);
 console.log('Server running on http://%s:%s', ip, port);
+console.log('Mongo server running on %s', mongoURL);
